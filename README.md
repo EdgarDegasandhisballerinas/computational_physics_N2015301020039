@@ -1,7 +1,7 @@
 # computational_physics_N2015301020039
 # **Homework list**
 - [ ] 
-[Exercise_01](https://raw.githubusercontent.com/EdgarDegasandhisballerinas/computational_physics_N2015301020039/046e2d4a286492771d56771d205ab549ee7b6281/%E4%BD%9C%E4%B8%9A.png)
+[Exercise_01](https://raw.githubusercontent.com/EdgarDegasandhisballerinas/computational_physics_N2015301020039/046e2d4a286492771d56771d205ab549ee7b6281/%E4%BD%9C%E4%B8%9A.png)(P.S.我这次作业提交出了点问题，文件不见了，我又重新弄了)
 - [ ] [Exercise 02](https://www.zybuluo.com/EdgarDegas/note/902613)
 - [ ] [Exercise_03](https://www.zybuluo.com/EdgarDegas/note/902591)
 - [ ] Exercise_04
