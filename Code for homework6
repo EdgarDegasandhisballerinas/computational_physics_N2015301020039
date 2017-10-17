@@ -1,0 +1,88 @@
+import mpl_toolkits.mplot3d
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import numpy as np
+import math
+
+x=[0]
+y=[0]
+z=[0]
+g=9.8
+omega=2000*2*math.pi/60
+angle=math.pi/10
+
+def backspin(x,y,z,v):
+    Vx=v*math.cos(angle)
+    Vy=v*math.sin(angle)
+    Vz=0
+    dt=0.1
+    n=int(2*Vy/g/dt)
+    i=0
+    while y[i]>=0:
+        x.append(x[i]+Vx*dt)
+        y.append(y[i]+Vy*dt)
+        z.append(z[i]+Vz*dt)
+        ax=-(0.0039+0.0058/(1+math.exp((v-35)/5)))*v*Vx
+        ay=-g
+        az=-4.1*10**(-4)*Vx*omega
+        Vx=Vx+ax*dt
+        Vy=Vy+ay*dt
+        Vz=Vz+az*dt
+        v=(Vx**2+Vy**2+Vz**2)**0.5
+        i=i+1
+        
+x_1=[0]
+y_1=[0]
+z_1=[0]        
+def nospin():
+    v=40
+    Vx=v*math.cos(angle)
+    Vy=v*math.sin(angle)
+    Vz=0
+    dt=0.1
+    n=int(2*Vy/g/dt)
+    i=0
+    while y_1[i]>=0:
+        x_1.append(x_1[i]+Vx*dt)
+        y_1.append(y_1[i]+Vy*dt)
+        z_1.append(z_1[i]+Vz*dt)
+        ax=-(0.0039+0.0058/(1+math.e**((v-35)/5)))*v*Vx
+        ay=-g
+        az=0
+        Vx=Vx+ax*dt
+        Vy=Vy+ay*dt
+        Vz=Vz+az*dt
+        v=(Vx**2+Vy**2+Vz**2)**0.5
+        i=i+1            
+        
+nospin()
+backspin(x,y,z,40)
+
+x1=[0]
+y1=[0]
+z1=[0]
+backspin2(x1,y1,z1,45)
+x2=[0]
+y2=[0]
+z2=[0]
+backspin2(x2,y2,z2,35)
+
+fig = plt.figure(figsize=(15,15))
+
+ax = fig.gca(projection='3d')
+
+ax.set_xlabel("X/m")
+ax.set_ylabel("Z/m")
+ax.set_zlabel("Y/m")
+ax.set_title("trajectory of a curved ball")
+
+ax.plot(x1,z1,y1,label="V=45m/s")
+ax.plot(x,z,y, label='V=40m/s')
+ax.plot(x2,z2,y2,label="V=35m/s")
+ax.plot(x_1,z_1,y_1,label="no spin")
+ax.scatter(x[0],y[0],z[0],label="initial position angle=pi/10",color="red")
+
+
+ax.legend()
+plt.show()
