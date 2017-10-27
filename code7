@@ -1,0 +1,77 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+
+class pendulum():
+    def __init__(self):                 
+        self.theta, self.omg, self.t = [0.02], [0], [0]
+        self.F=[0.0,0.5,1.2]
+        self.q=[0.0,0.5,1.2]
+        self.l, self.g, self.dt, self.time, self.n=  9.8, 9.8, 0.04, 60, int(60/0.04)
+    def calculate_1(self):                        #q=0.5,F=0
+        for i in range(self.n):
+            self.t.append(self.t[i]+self.dt)
+            self.omg.append(self.omg[i]+(-self.g/self.l*np.sin(self.theta[i])-self.q[0]*self.omg[i]+self.F[2]*np.sin(2./3.*self.t[i]))*self.dt)
+            self.theta.append(self.theta[i]+self.omg[i+1]*self.dt)
+            if self.theta[i+1]<-math.pi:
+                self.theta[i+1]=self.theta[i+1]+2*math.pi
+            if self.theta[i+1]>math.pi:
+                self.theta[i+1]=self.theta[i+1]-2*math.pi	
+    def plot_theta_1(self,_ax):
+        _ax.plot(self.t, self.theta,color="green",label=r'$q=0$')
+    def plot_omega_1(self,_ax):
+        _ax.plot(self.t, self.omg,color="green",label=r'$q=0$')         
+
+    def calculate_2(self):                      #q=0.5,F=0.5
+        for i in range(self.n):
+            self.t.append(self.t[i]+self.dt)
+            self.omg.append(self.omg[i]+(-self.g/self.l*np.sin(self.theta[i])-self.q[1]*self.omg[i]+self.F[2]*np.sin(2./3.*self.t[i]))*self.dt)
+            self.theta.append(self.theta[i]+self.omg[i]*self.dt)
+            if self.theta[i+1]<-math.pi:
+                self.theta[i+1]=self.theta[i+1]+2*math.pi
+            if self.theta[i+1]>math.pi:
+                self.theta[i+1]=self.theta[i+1]-2*math.pi
+    def plot_theta_2(self,_ax):
+        _ax.plot(self.t, self.theta,color='black',label=r'$q=0.5$')
+    def plot_omega_2(self,_ax):
+        _ax.plot(self.t, self.omg,color='black',label=r'$q=0.5$')
+        
+    def calculate_3(self):                      #q=0.5,F=1.2
+        for i in range(self.n):
+            self.t.append(self.t[i]+self.dt)
+            self.omg.append(self.omg[i]+(-self.g/self.l*np.sin(self.theta[i])-self.q[2]*self.omg[i]+self.F[2]*np.sin(2./3.*self.t[i]))*self.dt)
+            self.theta.append(self.theta[i]+self.omg[i]*self.dt)
+            if self.theta[i+1]<-math.pi:
+                self.theta[i+1]=self.theta[i+1]+2*math.pi
+            if self.theta[i+1]>math.pi:
+                self.theta[i+1]=self.theta[i+1]-2*math.pi
+    def plot_theta_3(self,_ax):
+        _ax.plot(self.t, self.theta,color='blue',label=r'$q=1.2$')
+    def plot_omega_3(self,_ax):
+        _ax.plot(self.t, self.omg,color='blue',label=r'$q=1.2$')
+        
+plt.figure(figsize=(14,9))
+ax1 = plt.subplot(121)
+ax2 = plt.subplot(122)
+ 
+chart1= pendulum()
+chart1.calculate_1()
+chart1.plot_theta_1(ax1)
+chart1.plot_omega_1(ax2)
+chart2= pendulum()
+chart2.calculate_2()
+chart2.plot_theta_2(ax1)
+chart2.plot_omega_2(ax2)
+chart3= pendulum()
+chart3.calculate_3()
+chart3.plot_theta_3(ax1)
+chart3.plot_omega_3(ax2)
+ax1.set_title(r'$\theta$ vs $\theta$(F=1.2)',fontsize=14)
+ax2.set_title(r'$\omega$ vs time(F=1.2)',fontsize=14)
+ax1.set_xlabel('time(s)',fontsize=14)    
+ax1.set_ylabel(r'$\theta$ (radians)',fontsize=14)
+ax2.set_xlabel('time(s)',fontsize=14)
+ax2.set_ylabel(r'$\omega$(radians/s)',fontsize=14)
+ax1.legend(fontsize=12,loc='best')
+ax2.legend(fontsize=12,loc='best')
+plt.show()
