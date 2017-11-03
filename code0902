@@ -1,0 +1,32 @@
+import mpl_toolkits.mplot3d
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import numpy as np
+import math
+
+
+x_1=[1]
+y_1=[0]
+z_1=[0]
+t_1=[0]
+r=40
+dt=0.0001
+while t_1[-1]<=50:
+    x_1.append(x_1[-1]+10*(y_1[-1]-x_1[-1])*dt)
+    y_1.append(y_1[-1]+(-x_1[-1]*z_1[-1]+r*x_1[-1]-y_1[-1])*dt)
+    z_1.append(z_1[-1]+(x_1[-1]*y_1[-1]-8/3*z_1[-1])*dt)
+    t_1.append(t_1[-1]+dt)
+
+
+    
+fig= plt.figure(figsize=(20,12))
+ax = fig.gca(projection='3d')
+ax.plot(x_1,y_1, z_1,label= 'r=40',linewidth=2, color='r')   
+
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
+ax.set_title("phase space plot")
+ax.legend()
+plt.show()
