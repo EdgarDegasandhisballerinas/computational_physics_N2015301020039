@@ -1,0 +1,65 @@
+from __future__ import division
+from math import *
+from pylab import *
+from numpy import *
+
+
+x_1=[0]
+y_1=[1]
+z_1=[1]
+t_1=[0]
+r=25
+dt=0.0001
+while t_1[-1]<=50:
+    x_1.append(x_1[-1]+10*(y_1[-1]-x_1[-1])*dt)
+    y_1.append(y_1[-1]+(-x_1[-1]*z_1[-1]+r*x_1[-1]-y_1[-1])*dt)
+    z_1.append(z_1[-1]+(x_1[-1]*y_1[-1]-8/3*z_1[-1])*dt)
+    t_1.append(t_1[-1]+dt)
+
+x_2=[1]
+y_2=[0]
+z_2=[0]
+t_2=[0]
+r=25
+while t_2[-1]<=50:
+    x_2.append(x_2[-1]+10*(y_2[-1]-x_2[-1])*dt)
+    y_2.append(y_2[-1]+(-x_2[-1]*z_2[-1]+r*x_2[-1]-y_2[-1])*dt)
+    z_2.append(z_2[-1]+(x_2[-1]*y_2[-1]-8/3*z_2[-1])*dt)
+    t_2.append(t_2[-1]+dt)
+
+    
+x_3=[0]
+y_3=[1]
+z_3=[1]
+t_3=[0]
+r= 15
+dt=0.0001
+while t_3[-1]<=50:
+    x_3.append(x_3[-1]+10*(y_3[-1]-x_3[-1])*dt)
+    y_3.append(y_3[-1]+(-x_3[-1]*z_3[-1]+r*x_3[-1]-y_3[-1])*dt)
+    z_3.append(z_3[-1]+(x_3[-1]*y_3[-1]-8/3*z_3[-1])*dt)
+    t_3.append(t_3[-1]+dt)
+    
+
+x_4= [0]
+y_4= [1]
+z_4= [1]
+t_4= [0]
+r= 5
+dt= 0.0001
+while t_4[-1]<=50:
+    x_4.append(x_4[-1]+10*(y_4[-1]-x_4[-1])*dt)
+    y_4.append(y_4[-1]+(-x_4[-1]*z_4[-1]+r*x_4[-1]-y_4[-1])*dt)
+    z_4.append(z_4[-1]+(x_4[-1]*y_4[-1]-8/3*z_4[-1])*dt)
+    t_4.append(t_4[-1]+dt)
+    
+fig= plt.figure(figsize=(20,12))
+plt.plot(t_1, z_1,label= 'x=1，y=z=0',linewidth=2)   
+plt.plot(t_2, z_2,label= 'x=0，y=z=1',linewidth=2) 
+
+plt.xlabel('time',fontsize=15)
+plt.ylabel("z",fontsize=15)
+plt.title("Lorenz model,z vs time",fontsize=15)
+plt.grid(True)
+plt.legend(loc='best')
+plt.show()
