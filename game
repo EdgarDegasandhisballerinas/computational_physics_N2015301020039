@@ -1,0 +1,438 @@
+import sys
+import pygame
+import pygame.font
+from pygame.sprite import Group
+from time import sleep
+from pygame.sprite import Sprite
+
+
+class Ship(Sprite):
+    '''管理飞船的类'''
+    def __init__(self,ai_settings,screen):
+        super(Ship,self).__init__()
+        self.screen = screen
+        self.ai_settings = ai_settings
+
+        self.image = pygame.image.load('blue.png')
+        self.rect = self.image.get_rect()
+        self.screen_rect = screen.get_rect()
+
+        self.rect.centery = self.screen_rect.centery
+        self.rect.left = self.screen_rect.left
+
+        self.center = float(self.rect.centery)
+
+        self.moving_up = False
+        self.moving_down = False
+
+    def update(self):
+        if self.moving_up and self.rect.top > 0:
+            self.center -= self.ai_settings.ship_speed_factor
+        if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
+            self.center += self.ai_settings.ship_speed_factor
+        self.rect.centery = self.center
+
+    def center_ship(self):
+        self.center = self.screen_rect.centery
+
+    def blitme(self):
+        self.screen.blit(self.image, self.rect)
+        
+class Settings():
+    '''参数设置的类'''
+    def __init__(self):
+        self.screen_width = 1000
+        self.screen_height = 700
+        self.bg_color = (255,255,255)
+        self.ship_limit = 3
+        #子弹设置
+        self.bullet_width = 15
+        self.bullet_height = 15
+        self.bullet_color = (0,230,230)
+        self.bullet_allowed = 4
+        #外星舰队设置
+        self.fleet_drop_speed = 10
+  
+        self.speedup_scale = 1.4
+        self.score_scale = 1.5
+        self.initialize_dynamic_settings()
+        self.alien_points = 50
+
+    def initialize_dynamic_settings(self):
+        #速度设置
+        self.ship_speed_factor = 1.5
+        self.bullet_speed_factorx = 2
+        self.bullet_speed_factory = 1
+        self.alien_speed_factor = 1
+        self.fleet_direction = 1
+
+    def increase_speed(self):
+        #速度提升，难度提高
+        self.ship_speed_factor *= self.speedup_scale
+        self.bullet_speed_factorx *= self.speedup_scale
+        self.alien_speed_factor *= self.speedup_scale
+        self.alien_points = int(self.score_scale * self.alien_points)
+        
+class Scoreboard():
+    '''显示得分信息的类'''
+    def __init__(self,ai_settings,screen,stats):
+        self.screen = screen
+        self.screen_rect = screen.get_rect()
+        self.ai_settings = ai_settings
+        self.stats = stats
+        #字体设置
+        self.text_color = (30,30,30)
+        self.font = pygame.font.SysFont(None, 45)
+        #准备初始得分图像
+        self.prep_score()
+        self.prep_high_score()
+        self.prep_level()
+        self.prep_ship()
+
+    def prep_score(self):
+        #得分转换为渲染图像
+        score_str = str(self.stats.score)
+        round_score = int(round(self.stats.score, -1))
+        score_str = "{:,}".format(round_score)
+        self.score_image = self.font.render(score_str,True,self.text_color,self.ai_settings.bg_color)
+        #显示在屏幕右上角
+        self.score_rect = self.score_image.get_rect()
+        self.score_rect.right = self.screen_rect.right -20
+        self.score_rect.top = 20
+
+    def show_score(self):
+        #在屏幕上显示得分
+        self.screen.blit(self.score_image,self.score_rect)
+        self.screen.blit(self.high_score_image, self.high_score_rect)
+        self.screen.blit(self.level_image, self.level_rect)
+        self.ships.draw(self.screen)
+
+    def prep_high_score(self):
+        #最高分
+        high_score = int(round(self.stats.high_score, -1))
+        high_score_str = "{:,}".format(high_score)
+        self.high_score_image = self.font.render(high_score_str, True,
+                                                 self.text_color, self.ai_settings.bg_color)
+        self.high_score_rect = self.high_score_image.get_rect()
+        self.high_score_rect.centerx = self.screen_rect.centerx
+        self.high_score_rect.top = 20
+
+    def prep_level(self):
+        #关卡设置，位置
+        self.level_image = self.font.render(str(self.stats.level), True,
+                                            self.text_color, self.ai_settings.bg_color)
+        self.level_rect = self.level_image.get_rect()
+        self.level_rect.right = self.score_rect.right
+        self.level_rect.top = self.score_rect.bottom + 10
+
+    def prep_ship(self):
+        #剩余数量显示
+        self.ships = Group()
+        for ship_number in range(self.stats.ships_left):
+            ship = Ship(self.ai_settings, self.screen)
+            ship.rect.x = 10 + ship_number * ship.rect.width
+            ship.rect.y = 10
+            self.ships.add(ship)
+
+        
+class Button():
+    '''按钮的类'''
+    def __init__(self,ai_settings,screen,msg):
+        #初始化按钮属性
+        self.screen = screen
+        self.screen_rect = screen.get_rect()
+        #按钮尺寸及属性
+        self.width, self.height = 200, 50
+        self.button_color = (255,0,0)
+        self.text_color = (255,255,255)
+        self.font = pygame.font.SysFont(None,48)
+        #按钮的rect对象，使其居中
+        self.rect = pygame.Rect(0,0,self.width,self.height)
+        self.rect.center = self.screen_rect.center
+        #按钮标签只需要创建一次
+        self.prep_msg(msg)
+
+    def prep_msg(self,msg):
+        #msg渲染为图像，使其在按钮上居中
+        self.msg_image = self.font.render(msg, True, self.text_color,self.button_color)
+        self.msg_image_rect = self.msg_image.get_rect()
+        self.msg_image_rect.center = self.rect.center
+
+    def draw_button(self):
+        self.screen.fill(self.button_color, self.rect)
+        self.screen.blit(self.msg_image, self.msg_image_rect)
+        
+class Bullet(Sprite):
+    '''子弹的类'''
+    def __init__(self,ai_settings,screen,ship):
+        super(Bullet,self).__init__()
+        self.screen = screen
+
+        self.rect = pygame.Rect(0,0,ai_settings.bullet_width,ai_settings.bullet_height)
+        self.rect.centerx = ship.rect.centerx
+        self.rect.top = ship.rect.top
+        #子弹初始位置
+        self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
+        self.color = ai_settings.bullet_color
+        self.speed_factorx = ai_settings.bullet_speed_factorx
+        self.speed_factory = ai_settings.bullet_speed_factory
+
+    def update(self):
+        #子弹飞行轨迹为抛物线
+        self.speed_factory -= 0.005
+        self.x += self.speed_factorx
+        self.y -= self.speed_factory
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def draw_bullet(self):
+        pygame.draw.rect(self.screen,self.color,self.rect)
+        
+class Alien(Sprite):
+    '''表示外星人的类'''
+    def __init__(self,ai_settings,screen):
+        #初始化外星人设置起始位置
+        super(Alien,self).__init__()
+        self.screen = screen
+        self.ai_settings = ai_settings
+        #加载外星人图像
+        self.image = pygame.image.load('alien.bmp')
+        self.rect = self.image.get_rect()
+        #外星人初始位置在屏幕左上角
+        self.rect.x = self.rect.width
+        self.rect.y = self.rect.height
+        #存储外星人准确位置
+        self.y = float(self.rect.y)
+
+    def check_edges(self):
+        '''判断外星人是否撞到屏幕边缘'''
+        screen_rect = self.screen.get_rect()
+        if self.rect.bottom >= screen_rect.bottom:
+            return True
+        elif self.rect.top <= 0:
+            return True
+
+    def update(self):
+        #移动舰队
+        self.y += self.ai_settings.alien_speed_factor*self.ai_settings.fleet_direction
+        self.rect.y = self.y
+
+    def blitme(self):
+        '''指定位置绘制外星人'''
+        self.screen.blit(self.image, self.rect)
+        
+    
+def check_events(ai_settings,screen,stats,ship,bullets,aliens,play_button,sb):
+    '''监视事件'''
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            check_keydown_events(event,ai_settings,screen,ship,bullets)
+        elif event.type == pygame.KEYUP:
+            check_keyup_events(event,ship)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x,mouse_y = pygame.mouse.get_pos()
+            check_play_button(ai_settings,stats,play_button,aliens,bullets,screen,ship,mouse_x,mouse_y,sb)
+
+def check_play_button(ai_settings,stats,play_button,aliens,bullets,screen,ship,mouse_x,mouse_y,sb):
+    '''玩家点击play时开始新游戏'''
+    button_clicked = play_button.rect.collidepoint(mouse_x,mouse_y)
+    if button_clicked and not stats.game_active:
+        ai_settings.initialize_dynamic_settings()
+        pygame.mouse.set_visible(False)
+        stats.reset_stats()
+        stats.game_active = True
+        aliens.empty()
+        bullets.empty()
+        sb.prep_score()
+        sb.prep_high_score()
+        sb.prep_level()
+        sb.prep_ship()
+        creat_fleet(ai_settings,screen,ship,aliens)
+        ship.center_ship()
+
+def check_keydown_events(event,ai_settings,screen,ship,bullets):
+    '''按键按下'''
+    if event.key == pygame.K_UP:
+        ship.moving_up = True
+    if event.key == pygame.K_DOWN:
+        ship.moving_down = True
+    elif event.key == pygame.K_SPACE:
+        fire_bullet(ai_settings, screen, ship, bullets)
+    elif event.key == pygame.K_q:
+        sys.exit()
+
+def check_keyup_events(event,ship):
+    '''按键抬起'''
+    if event.key == pygame.K_UP:
+        ship.moving_up = False
+    if event.key == pygame.K_DOWN:
+        ship.moving_down = False
+
+def update_screen(ai_settings,screen,stats,ship,aliens,bullets,play_button,sb):
+    '''更新屏幕'''
+    screen.fill(ai_settings.bg_color)
+    for bullet in bullets.sprites():
+        bullet.draw_bullet()
+    ship.blitme()
+    aliens.draw(screen)
+    sb.show_score()
+    if not stats.game_active:
+        play_button.draw_button()
+    pygame.display.flip()
+
+def update_bullets(ai_settings,screen,aliens,ship,bullets,stats,sb):
+    bullets.update()
+
+    for bullet in bullets.copy():
+        if bullet.rect.right >= 1000:
+            bullets.remove(bullet)
+    #print (len(bullets))
+
+    check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets,stats,sb)
+
+def check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets,stats,sb):
+    collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
+    if collisions:
+        for aliens in collisions.values():
+            stats.score += ai_settings.alien_points * len(aliens)
+            sb.prep_score()
+        check_high_score(stats,sb)
+    if len(aliens) == 0:
+        stats.level += 1
+        sb.prep_level()
+        bullets.empty()
+        ai_settings.increase_speed()
+        creat_fleet(ai_settings, screen, ship, aliens)
+
+def fire_bullet(ai_settings,screen,ship,bullets):
+    if len(bullets) < ai_settings.bullet_allowed:
+        new_bullet = Bullet(ai_settings, screen, ship)
+        bullets.add(new_bullet)
+
+def get_number_alien_y(ai_settings,alien_height):
+    #计算外星人数量行
+    available_space_y = ai_settings.screen_height - 2 * alien_height
+    number_aliens_y = int(available_space_y / (2 * alien_height))
+    return number_aliens_y
+
+def get_number_rows(ai_settings,ship_width, alien_width):
+    #计算外星人数量列
+    available_space_x = (ai_settings.screen_width -(3 * alien_width) - 2*ship_width)
+    number_rows = int(available_space_x / (2 * alien_width))
+    return number_rows
+
+def creat_alien(ai_settings,screen,aliens,alien_number,row_number):
+    alien = Alien(ai_settings, screen)
+    alien_height = alien.rect.height
+    alien.y = alien_height + 2 * alien_height * alien_number
+    alien.rect.y = alien.y
+    alien.rect.x =1000-( alien.rect.width + 2 * alien.rect.width * row_number)
+    aliens.add(alien)
+
+def creat_fleet(ai_settings,screen,ship,aliens):
+    '''创建外星人舰队'''
+    alien = Alien(ai_settings, screen)
+    alien_height = alien.rect.height
+    number_aliens_y = get_number_alien_y(ai_settings, alien_height)
+    number_rows = get_number_rows(ai_settings, ship.rect.width,alien.rect.width)
+
+    for row_number in range(number_rows):
+        for alien_number in range(number_aliens_y):
+            creat_alien(ai_settings,screen,aliens,alien_number,row_number)
+
+def check_fleet_edges(ai_settings,aliens):
+    '''外星人碰到屏幕边缘的措施'''
+    for alien in aliens.sprites():
+        if alien.check_edges():
+            change_fleet_direction(ai_settings,aliens)
+            break
+
+def change_fleet_direction(ai_settings,aliens):
+    '''外星人前进并改变方向'''
+    for alien in aliens.sprites():
+        alien.rect.x -= ai_settings.fleet_drop_speed
+    ai_settings.fleet_direction *= -1
+
+def ship_hit(ai_settings, stats, screen, ship, aliens, bullets,sb):
+    '''响应被外星人撞到的飞船'''
+    if stats.ships_left >0:
+        #剩余飞船减一
+        stats.ships_left -=1
+        #清空外星人和子弹列表
+        sb.prep_ship()
+        aliens.empty()
+        bullets.empty()
+        #创建新的外星人，飞船
+        creat_fleet(ai_settings,screen,ship,aliens)
+        ship.center_ship()
+        #暂停
+        sleep(0.5)
+    else:
+        stats.game_active = False
+        pygame.mouse.set_visible(True)
+
+def check_aliens_bottom(ai_settings, stats, screen, ship, aliens, bullets,sb):
+    '''检查是否有外星人到达屏幕左端'''
+    screen_rect = screen.get_rect()
+    for alien in aliens:
+        if alien.rect.left <=0:
+            #处理方法与飞船被撞相同
+            ship_hit(ai_settings, stats, screen, ship, aliens, bullets,sb)
+            break
+
+def update_aliens(ai_settings, stats, screen, ship, aliens, bullets,sb):
+    '''更新外星舰队所有外星人位置'''
+    check_fleet_edges(ai_settings, aliens)
+    aliens.update()
+    if pygame.sprite.spritecollideany(ship,aliens):
+        ship_hit(ai_settings, stats, screen, ship, aliens, bullets,sb)
+    check_aliens_bottom(ai_settings, stats, screen, ship, aliens, bullets,sb)
+
+def check_high_score(stats,sb):
+    #检查最高分
+    if stats.score > stats.high_score:
+        stats.high_score = stats.score
+        sb.prep_high_score()
+        
+class GameStats():
+    '''跟踪游戏统计信息'''
+    def __init__(self,ai_settings):
+        #初始化统计信息
+        self.ai_settings = ai_settings
+        self.reset_stats()
+        self.game_active = False
+        self.high_score = 0
+
+    def reset_stats(self):
+        #初始化游戏运行期间可能变化的统计信息
+        self.ships_left = self.ai_settings.ship_limit
+        self.score = 0
+        self.level = 1
+        
+def run_game():
+    pygame.init()
+    ai_settings = Settings()
+    screen = pygame.display.set_mode((ai_settings.screen_width, ai_settings.screen_height))
+    pygame.display.set_caption("Alien Invasion")
+    stats = GameStats(ai_settings)
+    #创建飞船，外星人和子弹编组
+    ship = Ship(ai_settings,screen)
+    bullets = Group()
+    aliens = Group()
+    #外星人群
+    creat_fleet(ai_settings,screen,ship,aliens)
+    play_button = Button(ai_settings,screen,'PLAY')
+    sb = Scoreboard(ai_settings,screen,stats)
+    #主循环
+    while True:
+        check_events(ai_settings,screen,stats,ship,bullets,aliens,play_button,sb)
+        if stats.game_active:
+            ship.update()
+            update_bullets(ai_settings,screen,aliens,ship,bullets,stats,sb)
+            update_aliens(ai_settings, stats, screen, ship, aliens, bullets,sb)
+        update_screen(ai_settings,screen,stats,ship,aliens,bullets,play_button,sb)
+
+run_game()
