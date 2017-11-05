@@ -9,6 +9,7 @@
 - [ ] [Exercise_06](https://www.zybuluo.com/EdgarDegas/note/916501)(第六次作业写完忘了提交了，哭o(╥﹏╥)o，可以再看一下嘛)
 - [ ] [Exercise_07](https://www.zybuluo.com/EdgarDegas/note/926032)
 - [ ] [Exercise_08](https://www.zybuluo.com/EdgarDegas/note/935619)
+- [ ] [期中作业](https://www.zybuluo.com/EdgarDegas/note/940687)
 - [ ] Exercise_09
 - [ ] Exercise_10
 - [ ] Exercise_11
