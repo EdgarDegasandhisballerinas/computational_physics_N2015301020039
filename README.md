@@ -11,6 +11,6 @@
 - [ ] [Exercise_08](https://www.zybuluo.com/EdgarDegas/note/935619)
 - [ ] [期中作业](https://www.zybuluo.com/EdgarDegas/note/940687)
 - [ ] [Exercise_09](https://www.zybuluo.com/EdgarDegas/note/945248)
-- [ ] Exercise_10
+- [ ] [Exercise_10](https://www.zybuluo.com/EdgarDegas/note/965334)
 - [ ] Exercise_11
 - [ ] Exercise_12
