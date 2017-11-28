@@ -1,0 +1,62 @@
+import matplotlib.pyplot as plt
+import math
+import mpl_toolkits.mplot3d
+
+class system():
+    def __init__(self, _dt=0.01, _n=4000, _Ms=1):
+        self.res = []
+        self.rej = []
+        self.rjs = []
+        self.vex, self.vey = [0], [2*math.pi]
+        self.vjx, self.vjy = [0], [2*math.pi/math.sqrt(5.2)]
+        self.vsx, self.vsy = [0], [0]
+        self.xe, self.ye = [1], [0]
+        self.xj, self.yj = [5.2], [0]
+        self.xs, self.ys = [0], [0]
+        self.Ms = _Ms
+        self.Mj = self.Ms * 0.001 *1000
+        self.Me = self.Ms / 330000
+        self.dt = _dt
+        self.n = _n
+        self.t = [0]
+
+    def new(self):
+        K = 4 * math.pi * math.pi
+        for i in range(self.n):
+            #三体距离
+            self.res.append(math.sqrt((self.xe[-1]-self.xs[-1])**2+(self.ye[-1]-self.ys[-1])**2))
+            self.rej.append(math.sqrt((self.xe[-1]-self.xj[-1])**2+(self.ye[-1]-self.yj[-1])**2))
+            self.rjs.append(math.sqrt((self.xj[-1]-self.xs[-1])**2+(self.yj[-1]-self.ys[-1])**2))
+            #三体速度
+            self.vex.append(self.vex[-1]- K * self.Ms * (self.xe[-1]-self.xs[-1])*self.dt/(self.res[-1]**3)-K*self.Mj*(self.xe[-1]-self.xj[-1])*self.dt/(self.rej[-1]**3))
+            self.vey.append(self.vey[-1] - K * self.Ms * (self.ye[-1] - self.ys[-1]) * self.dt / (self.res[-1] ** 3) - K * self.Mj * (self.ye[-1] - self.yj[-1]) * self.dt / (self.rej[-1] ** 3))
+            self.vjx.append(self.vjx[-1] - K * self.Ms * (self.xj[-1] - self.xs[-1]) * self.dt / (self.rjs[-1] ** 3) - K * self.Me * (self.xj[-1] - self.xe[-1]) * self.dt / (self.rej[-1] ** 3))
+            self.vjy.append(self.vjy[-1] - K * self.Ms * (self.yj[-1] - self.ys[-1]) * self.dt / (self.rjs[-1] ** 3) - K * self.Me * (self.yj[-1] - self.ye[-1]) * self.dt / (self.rej[-1] ** 3))
+            self.vsx.append(self.vsx[-1] - K * self.Mj * (self.xs[-1] - self.xj[-1]) * self.dt / (self.rjs[-1] ** 3) - K * self.Me * (self.xs[-1] - self.xe[-1]) * self.dt / (self.res[-1] ** 3))
+            self.vsy.append(self.vsy[-1] - K * self.Mj * (self.ys[-1] - self.yj[-1]) * self.dt / (self.rjs[-1] ** 3) - K * self.Me * (self.ys[-1] - self.ye[-1]) * self.dt / (self.res[-1] ** 3))
+            #三体位置
+            self.xe.append(self.xe[-1] + self.vex[-1] * self.dt)
+            self.ye.append(self.ye[-1] + self.vey[-1] * self.dt)
+            self.xj.append(self.xj[-1] + self.vjx[-1] * self.dt)
+            self.yj.append(self.yj[-1] + self.vjy[-1] * self.dt)
+            self.xs.append(self.xs[-1]+self.vsx[-1]*self.dt)
+            self.ys.append(self.ys[-1]+self.vsy[-1]*self.dt)
+            #时间
+            self.t.append(self.t[-1] + self.dt)
+
+    def plot1(self,_ax):
+        _ax.plot(self.xe, self.ye, color='blue', label="the earth")
+        _ax.plot(self.xj, self.yj, color='lightgreen', label='the jupyter')
+        _ax.plot(self.xs, self.ys, color='red', label='the sun')
+  
+
+solar = system()
+fig = plt.figure(figsize=(10,10))
+ax1 = plt
+solar.new()
+solar.plot1(ax1)
+ax1.legend(fontsize = 20, loc='upper left')
+ax1.xlabel('X(AU)')
+ax1.ylabel('Y(AU)')
+ax1.title('3-body simulation  Mj = 1000Mj')
+plt.show()
