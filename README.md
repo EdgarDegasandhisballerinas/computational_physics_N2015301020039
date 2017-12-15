@@ -13,4 +13,4 @@
 - [ ] [Exercise_09](https://www.zybuluo.com/EdgarDegas/note/945248)
 - [ ] [Exercise_10](https://www.zybuluo.com/EdgarDegas/note/965334)
 - [ ] [Exercise_11](https://www.zybuluo.com/EdgarDegas/note/975285)
-- [ ] Exercise_12
+- [ ] [Exercise_12](https://www.zybuluo.com/EdgarDegas/note/983161)
