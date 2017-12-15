@@ -1,0 +1,67 @@
+import matplotlib.pyplot as plt
+import math
+import numpy as np
+from matplotlib import animation
+
+c = 300
+delta_x= 0.01
+delta_t=delta_x/c
+r = 1.5
+c1,c2=2*(1-r**2),r**2
+
+def Wave(y_previous,y_current):
+    y_next=[0]
+    for i in range(1,len(y_current)-1):
+        y_next.append(c1*y_current[i]-y_previous[i]+c2*(y_current[i-1]+y_current[i+1]))
+    y_next.append(0)
+    return y_next
+
+def time(y0,y1,n):
+    for i in range(n):
+        y2 = next_step(y0,y1)
+        y0,y1=y1,y2
+    return y0,y1
+
+k0,x0=600,0.3
+k1,x1=300,0.6
+y_initial=[]
+for i in range(1+int(1/delta_x)):
+    y_initial.append(math.exp(-k0*(i*delta_x-x0)**2)-2*math.exp(-k1*(i*delta_x-x1)**2))
+
+x= np.linspace(0,1,int(1/delta_x)+1)
+plt.figure(figsize=(16,18))
+y0,y1 = time(y_initial,y_initial,92)
+plt.subplot(131)
+plt.plot(x,y1,label = 'n=92')
+plt.legend()
+plt.ylim(-2.01,2.01)
+y0,y1= time(y_initial,y_initial,286)
+plt.subplot(132)
+plt.plot(x,y1,label = 'n=286')
+plt.ylim(-2.01,2.01)
+plt.legend()
+y0,y1= time(y_initial,y_initial,550)
+plt.subplot(133)
+plt.plot(x,y1,label = 'n=550')
+plt.ylim(-2.01,2.01)
+plt.legend()
+plt.show()
+
+fig = plt.figure()
+ax = plt.axes(xlim=(0, 1), ylim=(-2.01,2.01))
+line, = ax.plot([], [], lw=1.)
+plt.title('Waves On A String With Fixed Ends')
+plt.xlabel('x')
+plt.ylabel('displacement')
+note = ax.text(0.05,1.4,'',fontsize=12)
+def init():
+    line.set_data([], [])
+    note.set_text('')
+    return line,note
+def animate(j):
+    y0,y1= time(y_initial,y_initial,j)
+    line.set_data(x, y1)
+    note.set_text(r'$y_0=exp[-%s\times (x-%s)^2]-2*exp[-%s\times (x-%s)^2]$'%(k0,x0,k1,x1)+'\nstep n=%s'%j)
+    return line,note
+anim1=animation.FuncAnimation(fig, animate, init_func=init, frames=200, interval=50)
+plt.show()
