@@ -1,0 +1,55 @@
+import random
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from matplotlib.pyplot import imsave
+import numpy as np
+
+principle = '11011110' #定义演变规则，此时对应着‘110’规则
+
+class group: #创建一个种群类型
+   def __init__(self,length): #定义对象时需输入种群大小作为参数
+       self.cells=[]
+       for i in range(length):
+           self.cells.append(random.choice((1,0))) #随机确定种群每个个体初始状态
+   def __repr__(self):
+       return str(self.cells)
+   def b_to_d(self,list_3): #定义函数，将三位的二进制数列表转换成十进制整数
+       return list_3[2]+2*list_3[1]+4*list_3[0]
+   def set_cell(self, i, val): #定义函数，设定种群种中个体状态
+       self.cells[i] = val
+   def next_gen(self, principle): #此函数根据现阶段种群状态和由principle变量确定的规则得到下一阶段种群状态
+       new_group = group(len(self.cells))
+       state = [None,None,None]
+       for i in range(len(self.cells)): #对每个个体查询临近左右个体和本身的状态，由二进制数列转换成十进制数后到princible中查询下一个状态值
+           state[0] = int(self.cells[i-1])
+           state[1] = int(self.cells[i])
+           if i == len(self.cells)-1:
+               state[2] = int(self.cells[0])
+           else:
+               state[2] = int(self.cells[i+1])
+           new_group.set_cell(i,int(principle[self.b_to_d(state)]))
+       return new_group
+img=[]
+A = group(256) #创建种群A，大小为包含256个个体
+for i in range(256): #演化256代，将每一代结果的状态值转换成颜色值保存到img列表里面
+   img_item = []
+   for jtem in A.cells:
+       if jtem == 0:
+           jtem=1
+       else:
+           jtem=0
+       img_item.append([jtem,jtem,jtem])
+   img.append(img_item)
+   B = A.next_gen(principle)
+   A = B
+img_item = []
+for jtem in A.cells:
+   if jtem == 0:
+       jtem=1
+   else:
+       jtem=0
+   img_item.append([jtem,jtem,jtem])
+img.append(img_item)
+img=np.array(img,dtype="float32")
+imgplot = plt.imshow(img) #用img列表绘图，展示演化结果
+plt.show()
